@@ -1,9 +1,10 @@
 package com.example.imageapp.data.local
 
+import android.graphics.Bitmap
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "image_search")
+@Entity(tableName = "image_table")
 data class Image(
     var thumbnail: String,
     var url: String,
