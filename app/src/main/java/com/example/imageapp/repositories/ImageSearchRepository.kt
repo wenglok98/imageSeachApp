@@ -1,7 +1,9 @@
 package com.example.imageapp.repositories
 
+import androidx.lifecycle.LiveData
 import com.example.imageapp.Other.Resource
 import com.example.imageapp.data.ImageResponse
+import com.example.imageapp.data.local.Image
 import com.example.imageapp.data.local.ImageDao
 import com.example.imageapp.data.remote.ImageApi
 import retrofit2.Response
@@ -11,6 +13,23 @@ class ImageSearchRepository @Inject constructor(
     private val imageDao: ImageDao,
     private val imageApi: ImageApi
 ) : ImageRepo {
+
+    override suspend fun insertImage(image: Image) {
+        imageDao.insertImage(image)
+    }
+
+    override suspend fun getLiveImage(keyword: String): LiveData<ArrayList<Image>> {
+        return imageDao.observeAllShoppingItems(keyword) as LiveData<ArrayList<Image>>
+    }
+
+    override suspend fun hasImageCache(keyword: String): Boolean {
+        return imageDao.hasImageCache(keyword)
+    }
+
+    override suspend fun getImages(keyword: String): ArrayList<Image> {
+        return imageDao.getImages(keyword) as ArrayList<Image>
+    }
+
     override suspend fun searchImageFromApi(
         queryString: String,
         pageNumber: Int,

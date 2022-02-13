@@ -1,5 +1,7 @@
 package com.example.imageapp.Other
 
+import android.graphics.Bitmap
+
 object Constants {
     const val DATABASE_NAME = "image_search_db"
 
@@ -10,4 +12,5 @@ object Constants {
     const val API_HOST = "contextualwebsearch-websearch-v1.p.rapidapi.com"
 
     const val PAGE_SIZE = 20
+
 }

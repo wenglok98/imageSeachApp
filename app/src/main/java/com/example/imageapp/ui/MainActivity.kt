@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.imageapp.Other.Constants.PAGE_SIZE
 import com.example.imageapp.viewmodel.ImageSearchViewModel
 import com.example.imageapp.R
@@ -18,6 +19,7 @@ import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -28,21 +30,22 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        viewModel.initChannel(main_View)
         setupSearchListener()
-
+        setImageData()
     }
+
 
     private fun setupSearchListener() {
         search_View.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
             override fun onQueryTextChange(newText: String): Boolean {
-                searchImageChannel.offer(newText)
+                searchImageChannel.trySend(newText)
                 return false
             }
 
             override fun onQueryTextSubmit(query: String): Boolean {
-                // task HERE
+                searchImageChannel.trySend(query)
                 return false
             }
 
@@ -52,8 +55,20 @@ class MainActivity : AppCompatActivity() {
             searchImageChannel.consumeAsFlow()
                 .debounce(500)
                 .map { keyWord ->
-                    viewModel.searchImage(keyWord, 1, PAGE_SIZE)
+
+                    viewModel.searchImageFromLocal(keyWord)
+
                 }.collect()
+        }
+    }
+
+    private fun setImageData() {
+        viewModel.imageList.observe(this) {
+            if (it.isNotEmpty()) {
+                var image = it[it.size - 1].imageBase64 ?: it[it.size - 1].url
+                Glide.with(applicationContext).load(image).into(testim)
+            }
+
         }
     }
 
