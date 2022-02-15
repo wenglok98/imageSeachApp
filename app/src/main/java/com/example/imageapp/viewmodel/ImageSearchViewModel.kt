@@ -68,7 +68,7 @@ class ImageSearchViewModel @Inject constructor(
                         keyword = keyword,
                         order = order
                     )
-                    order ++
+                    order++
                     tempList.add(tempImage)
                     processBase64Channel.trySend(tempImage)
                 } catch (e: Exception) {
@@ -84,7 +84,7 @@ class ImageSearchViewModel @Inject constructor(
             processBase64Channel.consumeAsFlow().map { image ->
                 launch {
                     try {
-                        var   tempBitmap =
+                        var tempBitmap =
                             Glide.with(view).asBitmap().override(600, 600).load(image.url).submit()
                                 .get()
                         repository.insertImage(image.apply {
