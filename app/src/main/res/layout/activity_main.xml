@@ -27,7 +27,18 @@
         android:id="@+id/image_Recycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/lottie_load_more"
         app:layout_constraintTop_toBottomOf="@id/lottie_Loading"
         tools:listitem="@layout/image_adapter_layout" />
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottie_load_more"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:lottie_autoPlay="true"
+        app:lottie_fileName="loading.json"
+        app:lottie_loop="true" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

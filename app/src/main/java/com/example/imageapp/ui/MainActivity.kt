@@ -8,6 +8,8 @@ import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.Target
@@ -36,7 +38,11 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
     //ImageViewer
     private var stfalconImageViewer: StfalconImageViewer<Image>? = null
 
+    //Load More Image
+    private var isLoadingMoreImage = false
+
     private val searchImageChannel = Channel<String>(Channel.CONFLATED)
+
     private var imageList = arrayListOf<Image>()
     private lateinit var imageAdapter: ImageAdapter
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +51,8 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
         viewModel.initChannel(main_View)
         setupAdapter()
         setupSearchListener()
+        addScrollerListener()
+
     }
 
     private fun setupAdapter() {
@@ -65,8 +73,27 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
                 imageAdapter.notifyDataSetChanged()
 
                 showResults()
+
             }
 
+        }
+
+        viewModel._loadingLoadMore.observe(this) {
+            if (it) {
+                showLoadMore()
+            } else {
+                hideLoadMore()
+                isLoadingMoreImage = false
+            }
+        }
+        viewModel.loadMoreImageList.observe(this) {
+            if (it.isNotEmpty()) {
+                Log.d("testlog", "the loaded ijmage once")
+                imageList.addAll(it)
+                imageAdapter.notifyDataSetChanged()
+//                imageAdapter.notifyDataSetChanged()
+            }
+            isLoadingMoreImage = false
         }
     }
 
@@ -100,7 +127,7 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
 
     override fun onItemSelected(imageView: ShapeableImageView, position: Int, item: Image) {
         stfalconImageViewer = StfalconImageViewer.Builder(
-            this, viewModel.imageList.value, ::loadImage
+            this, imageList, ::loadImage
         ).withStartPosition(position)
             .withTransitionFrom(imageView)
             .show()
@@ -121,4 +148,50 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
         image_Recycler.visibility = View.VISIBLE
     }
 
+    private fun showLoadMore() {
+        lottie_load_more.visibility = View.VISIBLE
+    }
+
+    private fun hideLoadMore() {
+        lottie_load_more.visibility = View.GONE
+
+    }
+
+    private fun addScrollerListener() {
+
+        var layoutManager = image_Recycler.layoutManager as StaggeredGridLayoutManager
+        //attaches scrollListener with RecyclerView
+        image_Recycler.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+                if (!isLoadingMoreImage) {
+                    //total no. of items
+                    var totalItemCount = layoutManager.itemCount
+                    //last visible item position
+                    val lastVisibleItemPositions: IntArray =
+                        layoutManager.findLastVisibleItemPositions(null)
+
+                    var lastVisibleItemPosition = getLastVisibleItem(lastVisibleItemPositions)
+                    if (!isLoadingMoreImage && lastVisibleItemPosition > totalItemCount - 5) {
+
+                        isLoadingMoreImage = true
+                        viewModel.loadMoreImage()
+
+                    }
+                }
+            }
+        })
+    }
+
+    fun getLastVisibleItem(lastVisibleItemPositions: IntArray): Int {
+        var maxSize = 0
+        for (i in lastVisibleItemPositions.indices) {
+            if (i == 0) {
+                maxSize = lastVisibleItemPositions[i]
+            } else if (lastVisibleItemPositions[i] > maxSize) {
+                maxSize = lastVisibleItemPositions[i]
+            }
+        }
+        return maxSize
+    }
 }

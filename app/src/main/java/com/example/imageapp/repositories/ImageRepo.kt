@@ -13,6 +13,8 @@ interface ImageRepo {
 
     suspend fun hasImageCache(keyword: String): Boolean
 
+    suspend fun getLastOrder(keyword: String): Int
+
     suspend fun getImages(keyword: String): ArrayList<Image>
 
     suspend fun searchImageFromApi(

@@ -15,6 +15,7 @@ import com.example.imageapp.data.local.Image
 import com.example.imageapp.repositories.ImageSearchRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
@@ -34,6 +35,12 @@ class ImageSearchViewModel @Inject constructor(
     private val _imageList = MutableLiveData<ArrayList<Image>>()
     var imageList: LiveData<ArrayList<Image>> = _imageList
 
+    private val _loadMoreImageList = MutableLiveData<ArrayList<Image>>()
+    var loadMoreImageList: LiveData<ArrayList<Image>> = _loadMoreImageList
+
+    private var lastKeyword = ""
+    var _loadingLoadMore = MutableLiveData<Boolean>()
+
     //Channel to update base64 for image
     private val processBase64Channel = Channel<Image>(Channel.UNLIMITED)
 
@@ -41,6 +48,7 @@ class ImageSearchViewModel @Inject constructor(
 
     fun searchImageFromLocal(keyword: String) {
         viewModelScope.launch(Dispatchers.IO) {
+            lastKeyword = keyword
             var cacheExist = repository.hasImageCache(keyword)
             if (cacheExist) {
                 var imagesDb = repository.getImages(keyword)
@@ -49,6 +57,57 @@ class ImageSearchViewModel @Inject constructor(
                 searchImage(keyword, 1, PAGE_SIZE)
             }
         }
+    }
+
+    fun loadMoreImage() {
+        viewModelScope.launch(Dispatchers.IO) {
+            var lastOrder = 0
+            var tempList = arrayListOf<Image>()
+
+            async {
+                try {
+                    lastOrder = repository.getLastOrder(lastKeyword) + 1 // add one for next usage
+                } catch (e: Exception) {
+                    _loadingLoadMore.postValue(false)
+                    return@async
+                }
+            }.await()
+            if (lastOrder < 15) {
+                _loadingLoadMore.postValue(false)
+                return@launch
+            }
+
+            var pageNumber = (lastOrder / PAGE_SIZE) + 1 //
+            _loadingLoadMore.postValue(true)
+
+
+            viewModelScope.launch(Dispatchers.IO) {
+                repository.searchImageFromApi(
+                    lastKeyword,
+                    pageNumber,
+                    PAGE_SIZE
+                ).data?.value?.forEach { imageResult ->
+                    try {
+                        var tempImage: Image = Image(
+                            imageResult.thumbnail,
+                            imageResult.url,
+                            id = UUID.randomUUID().toString(),
+                            keyword = lastKeyword,
+                            order = lastOrder
+                        )
+                        lastOrder++
+                        tempList.add(tempImage)
+                        processBase64Channel.trySend(tempImage)
+                    } catch (e: Exception) {
+                    }
+
+                    _loadMoreImageList.postValue(tempList)
+                    _loadingLoadMore.postValue(false)
+
+                }
+            }
+        }
+
     }
 
     private fun searchImage(keyword: String, pageNumber: Int, pageSize: Int) {

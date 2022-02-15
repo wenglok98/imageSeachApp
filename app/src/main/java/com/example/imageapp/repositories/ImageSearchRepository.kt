@@ -19,11 +19,15 @@ class ImageSearchRepository @Inject constructor(
     }
 
     override suspend fun getLiveImage(keyword: String): LiveData<ArrayList<Image>> {
-        return imageDao.observeAllShoppingItems(keyword) as LiveData<ArrayList<Image>>
+        return imageDao.observeImageList(keyword) as LiveData<ArrayList<Image>>
     }
 
     override suspend fun hasImageCache(keyword: String): Boolean {
         return imageDao.hasImageCache(keyword)
+    }
+
+    override suspend fun getLastOrder(keyword: String): Int {
+        return imageDao.getLastOrder(keyword)
     }
 
     override suspend fun getImages(keyword: String): ArrayList<Image> {
