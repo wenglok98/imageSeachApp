@@ -64,12 +64,12 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
         search_View.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
             override fun onQueryTextChange(newText: String): Boolean {
-                searchImageChannel.trySend(newText)
+                searchImageChannel.trySend(newText.trim())
                 return false
             }
 
             override fun onQueryTextSubmit(query: String): Boolean {
-                searchImageChannel.trySend(query)
+                searchImageChannel.trySend(query.trim())
                 return false
             }
 
