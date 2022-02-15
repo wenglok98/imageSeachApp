@@ -30,7 +30,7 @@ constructor(
         }
 
         itemView.setOnClickListener {
-            interaction?.onItemSelected(adapterPosition, item)
+            interaction?.onItemSelected(imageView_im,adapterPosition, item)
         }
 
 

@@ -3,6 +3,7 @@ package com.example.imageapp.ui
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.lifecycleScope
@@ -13,6 +14,8 @@ import com.example.imageapp.viewmodel.ImageSearchViewModel
 import com.example.imageapp.R
 import com.example.imageapp.adapter.ImageAdapter
 import com.example.imageapp.data.local.Image
+import com.google.android.material.imageview.ShapeableImageView
+import com.stfalcon.imageviewer.StfalconImageViewer
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +31,9 @@ import kotlinx.coroutines.withContext
 class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
     private val viewModel: ImageSearchViewModel by viewModels()
 
+    //ImageViewer
+    private var stfalconImageViewer: StfalconImageViewer<Image>? = null
+
     private val searchImageChannel = Channel<String>(Channel.CONFLATED)
     private var imageList = arrayListOf<Image>()
     private lateinit var imageAdapter: ImageAdapter
@@ -40,6 +46,7 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
     }
 
     private fun setupAdapter() {
+
         imageAdapter = ImageAdapter(this@MainActivity)
         image_Recycler.apply {
             layoutManager = StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
@@ -85,8 +92,17 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
     }
 
 
-    override fun onItemSelected(position: Int, item: Image) {
-        TODO("STFALCON TO VIEW IMAGE")
+    override fun onItemSelected(imageView: ShapeableImageView, position: Int, item: Image) {
+        stfalconImageViewer = StfalconImageViewer.Builder(
+            this, viewModel.imageList.value, ::loadImage
+        ).withStartPosition(position)
+            .withTransitionFrom(imageView)
+            .show()
+    }
+
+    private fun loadImage(imageView: ImageView, img: Image?) {
+        var file = img?.imageBase64 ?: img?.url
+        Glide.with(this).load(file).into(imageView)
     }
 
 

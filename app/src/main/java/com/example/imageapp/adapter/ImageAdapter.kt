@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.imageapp.R
 import com.example.imageapp.adapter.viewHolder.ImageAdapterViewHolder
 import com.example.imageapp.data.local.Image
+import com.google.android.material.imageview.ShapeableImageView
 
 
 class ImageAdapter(private val interaction: Interaction? = null) :
@@ -58,7 +59,7 @@ class ImageAdapter(private val interaction: Interaction? = null) :
 
 
     interface Interaction {
-        fun onItemSelected(position: Int, item: Image)
+        fun onItemSelected(imageView: ShapeableImageView, position: Int, item: Image)
     }
 }
 

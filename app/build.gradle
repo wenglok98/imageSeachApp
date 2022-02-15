@@ -92,4 +92,8 @@ dependencies {
     implementation "androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha02"
     kapt "androidx.hilt:hilt-compiler:1.0.0-alpha02"
 
+    //Stfalcon - Image Viewer
+    implementation "com.github.stfalcon:stfalcon-imageviewer:1.0.0"
+
+
 }
