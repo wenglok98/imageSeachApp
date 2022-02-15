@@ -24,7 +24,7 @@ constructor(
             image?.let {
                 Glide.with(context).load(image)
                     .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                    .override(Target.SIZE_ORIGINAL).into(imageView_im)
+                    .override(300,300).into(imageView_im)
             }
         } catch (e: Exception) {
         }

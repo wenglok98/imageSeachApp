@@ -3,12 +3,14 @@ package com.example.imageapp.ui
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.Target
 import com.example.imageapp.Other.Constants.PAGE_SIZE
 import com.example.imageapp.viewmodel.ImageSearchViewModel
 import com.example.imageapp.R
@@ -61,6 +63,8 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
                 imageAdapter.notifyDataSetChanged()
                 imageList.addAll(it)
                 imageAdapter.notifyDataSetChanged()
+
+                showResults()
             }
 
         }
@@ -71,11 +75,13 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
         search_View.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
 
             override fun onQueryTextChange(newText: String): Boolean {
+                showLoading()
                 searchImageChannel.trySend(newText.trim())
                 return false
             }
 
             override fun onQueryTextSubmit(query: String): Boolean {
+                showLoading()
                 searchImageChannel.trySend(query.trim())
                 return false
             }
@@ -102,8 +108,17 @@ class MainActivity : AppCompatActivity(), ImageAdapter.Interaction {
 
     private fun loadImage(imageView: ImageView, img: Image?) {
         var file = img?.imageBase64 ?: img?.url
-        Glide.with(this).load(file).into(imageView)
+        Glide.with(this).load(file).override(Target.SIZE_ORIGINAL).into(imageView)
     }
 
+    private fun showLoading() {
+        lottie_Loading.visibility = View.VISIBLE
+        image_Recycler.visibility = View.GONE
+    }
+
+    private fun showResults() {
+        lottie_Loading.visibility = View.GONE
+        image_Recycler.visibility = View.VISIBLE
+    }
 
 }
